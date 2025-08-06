@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📄 身分證上傳系統</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background: #f9f9f9;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #4CAF50;
+            background: #f0f8f0;
+        }
+
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .upload-btn:hover {
+            background: #45a049;
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #e0e0e0;
+        }
+
+        .preview-box {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .preview-image:hover {
+            transform: scale(1.05);
+            cursor: pointer;
+        }
+
+        .preview-placeholder {
+            width: 100%;
+            height: 150px;
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .file-info {
+            background: #e8f5e8;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #2e7d32;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .file-info {
+            background: #e9f7ef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #27ae60;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .ai-result-container {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            display: none;
+        }
+
+        .ai-result-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .ai-result-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ddd;
+        }
+
+        .ai-result-success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+
+        .ai-result-warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+
+        .ai-result-error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+
+        .ai-extracted-text {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f1f3f4;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        /* 圖片調整控制面板樣式 */
+        .image-adjustment-panel {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            display: none;
+        }
+
+        .adjustment-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .control-label {
+            font-size: 0.8em;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .adjustment-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.3s;
+            min-width: 60px;
+        }
+
+        .adjustment-btn:hover {
+            background: #45a049;
+        }
+
+        .adjustment-btn.secondary {
+            background: #2196F3;
+        }
+
+        .adjustment-btn.secondary:hover {
+            background: #1976D2;
+        }
+
+        .adjustment-slider {
+            width: 100px;
+            margin: 0 5px;
+        }
+
+        .position-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            max-width: 120px;
+        }
+
+        .position-btn {
+            background: #FF9800;
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.7em;
+            min-height: 30px;
+        }
+
+        .position-btn:hover {
+            background: #F57C00;
+        }
+
+        .adjustment-canvas {
+            max-width: 100%;
+            max-height: 250px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 10px auto;
+            display: block;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .reset-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .reset-btn:hover {
+            background: #d32f2f;
+        }
+
+        @media (max-width: 768px) {
+            .preview-container {
+                flex-direction: column;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .adjustment-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .control-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇹🇼 台灣身分證上傳系統</h1>
+            <p>請上傳您的台灣身分證正反面照片，系統將使用 AI 進行圖像識別與驗證</p>
+            <p style="font-size: 0.9em; opacity: 0.8;">🤖 支援矩形比例檢測、OCR文字識別、姓名驗證</p>
+            <p style="font-size: 0.85em; opacity: 0.8;">🔄 前端自動修正圖片方向、比例調整、畫質優化</p>
+        </div>
+
+        <div class="form-container">
+            <!-- 顯示成功或錯誤訊息 -->
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <form id="uploadForm" action="/id-card/upload" method="post" enctype="multipart/form-data">
+
+                <!-- 姓名輸入 -->
+                <div class="form-group">
+                    <label for="userName">👤 姓名 *</label>
+                    <input type="text" id="userName" name="userName" required placeholder="請輸入您的真實姓名" maxlength="20">
+                </div>
+
+                <!-- 身分證正面上傳 -->
+                <div class="form-group">
+                    <label>�🇼 台灣身分證正面 * (含照片面)</label>
+                    <div class="upload-area" onclick="document.getElementById('frontImage').click()">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">點擊或拖拽上傳台灣身分證正面</div>
+                        <div class="upload-text" style="font-size: 0.9em; color: #999;">
+                            支援 JPG、PNG 格式，檔案大小不超過 10MB<br>
+                            🔄 前端將自動修正方向、調整比例並優化畫質<br>
+                            AI 將檢測：比例、姓名、身分證號碼
+                        </div>
+                        <button type="button" class="upload-btn">選擇檔案</button>
+                    </div>
+                    <input type="file" id="frontImage" name="frontImage" class="file-input"
+                        accept="image/jpeg,image/jpg,image/png" required>
+                    <div id="frontImageInfo" class="file-info" style="display: none;"></div>
+                </div>
+
+                <!-- 身分證反面上傳 -->
+                <div class="form-group">
+                    <label>🇹� 台灣身分證反面 * (含配偶欄)</label>
+                    <div class="upload-area" onclick="document.getElementById('backImage').click()">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">點擊或拖拽上傳台灣身分證反面</div>
+                        <div class="upload-text" style="font-size: 0.9em; color: #999;">
+                            支援 JPG、PNG 格式，檔案大小不超過 10MB<br>
+                            🔄 前端將自動修正方向、調整比例並優化畫質<br>
+                            AI 將檢測：比例、發證機關、其他資訊
+                        </div>
+                        <button type="button" class="upload-btn">選擇檔案</button>
+                    </div>
+                    <input type="file" id="backImage" name="backImage" class="file-input"
+                        accept="image/jpeg,image/jpg,image/png" required>
+                    <div id="backImageInfo" class="file-info" style="display: none;"></div>
+                </div>
+
+                <!-- 圖片預覽區域 -->
+                <div class="preview-container">
+                    <div class="preview-box">
+                        <h3>🆔 正面預覽</h3>
+                        <div id="frontPlaceholder" class="preview-placeholder">
+                            等待上傳身分證正面...
+                        </div>
+                        <img id="frontPreview" class="preview-image" style="display: none;"
+                            onclick="enlargeImage(this)">
+
+                        <!-- 正面圖片調整控制面板 -->
+                        <div id="frontAdjustmentPanel" class="image-adjustment-panel">
+                            <h4 style="text-align: center; margin: 0 0 15px 0; color: #333;">🔧 圖片微調</h4>
+
+                            <div class="adjustment-controls">
+                                <!-- 旋轉控制 -->
+                                <div class="control-group">
+                                    <div class="control-label">旋轉</div>
+                                    <div>
+                                        <button class="adjustment-btn" onclick="rotateImage('front', -90)">↺ 左轉</button>
+                                        <button class="adjustment-btn" onclick="rotateImage('front', 90)">↻ 右轉</button>
+                                    </div>
+                                </div>
+
+                                <!-- 縮放控制 -->
+                                <div class="control-group">
+                                    <div class="control-label">縮放</div>
+                                    <div>
+                                        <button class="adjustment-btn secondary"
+                                            onclick="scaleImage('front', 0.9)">縮小</button>
+                                        <button class="adjustment-btn secondary"
+                                            onclick="scaleImage('front', 1.1)">放大</button>
+                                    </div>
+                                </div>
+
+                                <!-- 位置控制 -->
+                                <div class="control-group">
+                                    <div class="control-label">位置</div>
+                                    <div class="position-controls">
+                                        <div></div>
+                                        <button class="position-btn" onclick="moveImage('front', 0, -10)">↑</button>
+                                        <div></div>
+                                        <button class="position-btn" onclick="moveImage('front', -10, 0)">←</button>
+                                        <button class="position-btn" onclick="resetImagePosition('front')">●</button>
+                                        <button class="position-btn" onclick="moveImage('front', 10, 0)">→</button>
+                                        <div></div>
+                                        <button class="position-btn" onclick="moveImage('front', 0, 10)">↓</button>
+                                        <div></div>
+                                    </div>
+                                </div>
+
+                                <!-- 重置按鈕 -->
+                                <div class="control-group">
+                                    <div class="control-label">重置</div>
+                                    <button class="reset-btn" onclick="resetAllAdjustments('front')">🔄 重置</button>
+                                </div>
+                            </div>
+
+                            <!-- 調整結果預覽 -->
+                            <canvas id="frontAdjustmentCanvas" class="adjustment-canvas"
+                                style="display: none;"></canvas>
+
+                            <div style="text-align: center; margin-top: 10px;">
+                                <button class="adjustment-btn" onclick="applyAdjustments('front')">✅ 套用調整</button>
+                                <button class="adjustment-btn secondary" onclick="closeAdjustmentPanel('front')">❌
+                                    取消</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="preview-box">
+                        <h3>🆔 反面預覽</h3>
+                        <div id="backPlaceholder" class="preview-placeholder">
+                            等待上傳身分證反面...
+                        </div>
+                        <img id="backPreview" class="preview-image" style="display: none;" onclick="enlargeImage(this)">
+
+                        <!-- 反面圖片調整控制面板 -->
+                        <div id="backAdjustmentPanel" class="image-adjustment-panel">
+                            <h4 style="text-align: center; margin: 0 0 15px 0; color: #333;">🔧 圖片微調</h4>
+
+                            <div class="adjustment-controls">
+                                <!-- 旋轉控制 -->
+                                <div class="control-group">
+                                    <div class="control-label">旋轉</div>
+                                    <div>
+                                        <button class="adjustment-btn" onclick="rotateImage('back', -90)">↺ 左轉</button>
+                                        <button class="adjustment-btn" onclick="rotateImage('back', 90)">↻ 右轉</button>
+                                    </div>
+                                </div>
+
+                                <!-- 縮放控制 -->
+                                <div class="control-group">
+                                    <div class="control-label">縮放</div>
+                                    <div>
+                                        <button class="adjustment-btn secondary"
+                                            onclick="scaleImage('back', 0.9)">縮小</button>
+                                        <button class="adjustment-btn secondary"
+                                            onclick="scaleImage('back', 1.1)">放大</button>
+                                    </div>
+                                </div>
+
+                                <!-- 位置控制 -->
+                                <div class="control-group">
+                                    <div class="control-label">位置</div>
+                                    <div class="position-controls">
+                                        <div></div>
+                                        <button class="position-btn" onclick="moveImage('back', 0, -10)">↑</button>
+                                        <div></div>
+                                        <button class="position-btn" onclick="moveImage('back', -10, 0)">←</button>
+                                        <button class="position-btn" onclick="resetImagePosition('back')">●</button>
+                                        <button class="position-btn" onclick="moveImage('back', 10, 0)">→</button>
+                                        <div></div>
+                                        <button class="position-btn" onclick="moveImage('back', 0, 10)">↓</button>
+                                        <div></div>
+                                    </div>
+                                </div>
+
+                                <!-- 重置按鈕 -->
+                                <div class="control-group">
+                                    <div class="control-label">重置</div>
+                                    <button class="reset-btn" onclick="resetAllAdjustments('back')">🔄 重置</button>
+                                </div>
+                            </div>
+
+                            <!-- 調整結果預覽 -->
+                            <canvas id="backAdjustmentCanvas" class="adjustment-canvas" style="display: none;"></canvas>
+
+                            <div style="text-align: center; margin-top: 10px;">
+                                <button class="adjustment-btn" onclick="applyAdjustments('back')">✅ 套用調整</button>
+                                <button class="adjustment-btn secondary" onclick="closeAdjustmentPanel('back')">❌
+                                    取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI 驗證結果顯示區域 -->
+                <div id="aiResultContainer" class="ai-result-container">
+                    <div class="ai-result-title">
+                        🤖 AI 圖像識別結果
+                    </div>
+                    <div id="aiResultContent">
+                        <!-- AI 驗證結果將在這裡顯示 -->
+                    </div>
+                </div>
+
+                <!-- 上傳進度條 -->
+                <div id="progressContainer" style="display: none;">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <span id="progressText">上傳中...</span>
+                    </div>
+                </div>
+
+                <!-- 提交按鈕 -->
+                <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                    🚀 開始上傳
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 檔案選擇處理
+        document.getElementById('frontImage').addEventListener('change', function (e) {
+            handleFileSelect(e.target, 'front');
+        });
+
+        document.getElementById('backImage').addEventListener('change', function (e) {
+            handleFileSelect(e.target, 'back');
+        });
+
+        // 姓名輸入處理
+        document.getElementById('userName').addEventListener('input', checkFormValid);
+
+        function handleFileSelect(input, side) {
+            const file = input.files[0];
+            if (file) {
+                // 檢查檔案類型
+                if (!file.type.match('image/(jpeg|jpg|png)')) {
+                    alert('請選擇 JPG 或 PNG 格式的圖片！');
+                    input.value = '';
+                    return;
+                }
+
+                // 檢查檔案大小 (放寬到 10MB，因為我們會在前端壓縮)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('檔案大小不能超過 10MB！');
+                    input.value = '';
+                    return;
+                }
+
+                // 顯示處理中狀態
+                const infoElement = document.getElementById(side + 'ImageInfo');
+                infoElement.innerHTML = `⏳ 處理中：<strong>${file.name}</strong> (${formatFileSize(file.size)})`;
+                infoElement.style.display = 'block';
+
+                // 處理圖片
+                processImageFile(file, side).then(processedFile => {
+                    // 更新檔案資訊
+                    infoElement.innerHTML = `✅ 已處理：<strong>${file.name}</strong><br>
+                        原始大小: ${formatFileSize(file.size)} → 處理後: ${formatFileSize(processedFile.size)}`;
+
+                    // 將處理後的檔案設定到 input (用於表單提交)
+                    const dt = new DataTransfer();
+                    dt.items.add(processedFile);
+                    input.files = dt.files;
+
+                    // 顯示預覽 (使用處理後的檔案)
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const preview = document.getElementById(side + 'Preview');
+                        const placeholder = document.getElementById(side + 'Placeholder');
+
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        placeholder.style.display = 'none';
+
+                        // 儲存原始圖片數據供調整功能使用
+                        window[side + 'OriginalImageData'] = e.target.result;
+                        window[side + 'CurrentImageData'] = e.target.result;
+                        window[side + 'AdjustmentState'] = {
+                            rotation: 0,
+                            scale: 1,
+                            offsetX: 0,
+                            offsetY: 0
+                        };
+
+                        // 添加淡入效果和調整按鈕
+                        preview.style.opacity = '0';
+                        setTimeout(() => {
+                            preview.style.transition = 'opacity 0.3s ease';
+                            preview.style.opacity = '1';
+
+                            // 添加調整按鈕 (如果還沒有的話)
+                            addAdjustmentButton(side);
+                        }, 10);
+                    };
+                    reader.readAsDataURL(processedFile);
+                }).catch(error => {
+                    console.error('圖片處理失敗:', error);
+                    infoElement.innerHTML = `⚠️ 處理失敗：<strong>${file.name}</strong><br>使用原始檔案`;
+
+                    // 使用原始檔案顯示預覽
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const preview = document.getElementById(side + 'Preview');
+                        const placeholder = document.getElementById(side + 'Placeholder');
+
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        placeholder.style.display = 'none';
+
+                        // 儲存原始圖片數據供調整功能使用
+                        window[side + 'OriginalImageData'] = e.target.result;
+                        window[side + 'CurrentImageData'] = e.target.result;
+                        window[side + 'AdjustmentState'] = {
+                            rotation: 0,
+                            scale: 1,
+                            offsetX: 0,
+                            offsetY: 0
+                        };
+
+                        // 添加調整按鈕
+                        addAdjustmentButton(side);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                // 如果沒有選擇檔案，隱藏預覽
+                const preview = document.getElementById(side + 'Preview');
+                const placeholder = document.getElementById(side + 'Placeholder');
+                const infoElement = document.getElementById(side + 'ImageInfo');
+
+                preview.style.display = 'none';
+                placeholder.style.display = 'flex';
+                infoElement.style.display = 'none';
+            }
+
+            checkFormValid();
+        }
+
+        // 圖片放大查看功能
+        function enlargeImage(img) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                cursor: pointer;
+            `;
+
+            const enlargedImg = document.createElement('img');
+            enlargedImg.src = img.src;
+            enlargedImg.style.cssText = `
+                max-width: 90%;
+                max-height: 90%;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            `;
+
+            modal.appendChild(enlargedImg);
+            document.body.appendChild(modal);
+
+            // 點擊關閉
+            modal.onclick = function () {
+                document.body.removeChild(modal);
+            };
+
+            // ESC 鍵關閉
+            document.addEventListener('keydown', function handleEsc(e) {
+                if (e.key === 'Escape') {
+                    if (document.body.contains(modal)) {
+                        document.body.removeChild(modal);
+                    }
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            });
+        }
+
+        function checkFormValid() {
+            const userName = document.getElementById('userName').value.trim();
+            const frontImage = document.getElementById('frontImage').files[0];
+            const backImage = document.getElementById('backImage').files[0];
+
+            const submitBtn = document.getElementById('submitBtn');
+            const isValid = userName && frontImage && backImage;
+
+            submitBtn.disabled = !isValid;
+            submitBtn.textContent = isValid ? '🚀 開始上傳' : '⚠️ 請填寫完整資料';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 圖片處理核心函數
+        async function processImageFile(file, side) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        try {
+                            // 創建 canvas 進行圖片處理
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+
+                            // 1. 檢測並修正圖片方向
+                            const correctedDimensions = correctImageOrientation(img);
+
+                            // 2. 調整圖片尺寸和比例
+                            const finalDimensions = adjustImageForIdCard(correctedDimensions);
+
+                            // 設定 canvas 尺寸
+                            canvas.width = finalDimensions.width;
+                            canvas.height = finalDimensions.height;
+
+                            // 3. 繪製處理後的圖片
+                            ctx.fillStyle = '#FFFFFF'; // 白色背景
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                            // 應用旋轉 (如果需要)
+                            if (finalDimensions.rotation !== 0) {
+                                ctx.save();
+                                ctx.translate(canvas.width / 2, canvas.height / 2);
+                                ctx.rotate(finalDimensions.rotation * Math.PI / 180);
+                                ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                                ctx.restore();
+                            } else {
+                                // 繪製圖片 (可能需要縮放)
+                                ctx.drawImage(img,
+                                    finalDimensions.sourceX, finalDimensions.sourceY,
+                                    finalDimensions.sourceWidth, finalDimensions.sourceHeight,
+                                    0, 0, canvas.width, canvas.height);
+                            }
+
+                            // 4. 增強圖片質量 (銳化和對比度)
+                            enhanceImageQuality(ctx, canvas.width, canvas.height);
+
+                            // 5. 轉換為 blob 檔案
+                            canvas.toBlob(function (blob) {
+                                if (blob) {
+                                    // 創建新的 File 物件
+                                    const processedFile = new File([blob], file.name, {
+                                        type: 'image/jpeg',
+                                        lastModified: Date.now()
+                                    });
+
+                                    console.log(`圖片處理完成 - ${side}: ${img.width}x${img.height} → ${canvas.width}x${canvas.height}`);
+                                    resolve(processedFile);
+                                } else {
+                                    reject(new Error('圖片處理失敗'));
+                                }
+                            }, 'image/jpeg', 0.9); // 90% 品質的 JPEG
+
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    img.onerror = () => reject(new Error('圖片載入失敗'));
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => reject(new Error('檔案讀取失敗'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 檢測並修正圖片方向
+        function correctImageOrientation(img) {
+            const width = img.width;
+            const height = img.height;
+            const ratio = width / height;
+
+            console.log(`原始圖片尺寸: ${width}x${height}, 比例: ${ratio.toFixed(3)}`);
+
+            // 台灣身分證標準比例 85.6mm x 54mm ≈ 1.585:1
+            const idealRatio = 1.585;
+
+            let rotation = 0;
+            let finalWidth = width;
+            let finalHeight = height;
+
+            // 如果圖片是直向的 (高度大於寬度)，檢查旋轉是否更好
+            if (height > width) {
+                const rotatedRatio = height / width; // 旋轉後的比例
+                const originalDiff = Math.abs(ratio - idealRatio);
+                const rotatedDiff = Math.abs(rotatedRatio - idealRatio);
+
+                if (rotatedDiff < originalDiff) {
+                    rotation = 90;
+                    finalWidth = height;
+                    finalHeight = width;
+                    console.log('圖片將旋轉 90 度以符合身分證方向');
+                }
+            }
+
+            return {
+                width: finalWidth,
+                height: finalHeight,
+                rotation: rotation,
+                originalWidth: width,
+                originalHeight: height
+            };
+        }
+
+        // 調整圖片尺寸和比例以符合身分證規格
+        function adjustImageForIdCard(dimensions) {
+            const { width, height, rotation } = dimensions;
+            const currentRatio = width / height;
+            const targetRatio = 1.585; // 台灣身分證比例
+
+            let finalWidth, finalHeight;
+            let sourceX = 0, sourceY = 0;
+            let sourceWidth = dimensions.originalWidth;
+            let sourceHeight = dimensions.originalHeight;
+
+            // 如果需要旋轉，直接使用旋轉後的尺寸
+            if (rotation !== 0) {
+                finalWidth = Math.min(1200, width); // 限制最大寬度
+                finalHeight = Math.round(finalWidth / targetRatio);
+            } else {
+                // 調整比例以符合身分證標準
+                if (Math.abs(currentRatio - targetRatio) > 0.2) {
+                    if (currentRatio > targetRatio) {
+                        // 圖片太寬，需要裁剪寬度
+                        finalHeight = height;
+                        finalWidth = Math.round(height * targetRatio);
+                        sourceX = (dimensions.originalWidth - finalWidth) / 2; // 居中裁剪
+                        sourceWidth = finalWidth;
+                    } else {
+                        // 圖片太高，需要裁剪高度
+                        finalWidth = width;
+                        finalHeight = Math.round(width / targetRatio);
+                        sourceY = (dimensions.originalHeight - finalHeight) / 2; // 居中裁剪
+                        sourceHeight = finalHeight;
+                    }
+                } else {
+                    finalWidth = width;
+                    finalHeight = height;
+                }
+
+                // 確保圖片尺寸適合 OCR (最小 800px 寬度，最大 1200px)
+                if (finalWidth < 800) {
+                    const scaleFactor = 800 / finalWidth;
+                    finalWidth = 800;
+                    finalHeight = Math.round(finalHeight * scaleFactor);
+                } else if (finalWidth > 1200) {
+                    const scaleFactor = 1200 / finalWidth;
+                    finalWidth = 1200;
+                    finalHeight = Math.round(finalHeight * scaleFactor);
+                }
+            }
+
+            console.log(`調整後尺寸: ${finalWidth}x${finalHeight}, 比例: ${(finalWidth / finalHeight).toFixed(3)}`);
+
+            return {
+                width: finalWidth,
+                height: finalHeight,
+                rotation: rotation,
+                sourceX: sourceX,
+                sourceY: sourceY,
+                sourceWidth: sourceWidth,
+                sourceHeight: sourceHeight
+            };
+        }
+
+        // 增強圖片質量
+        function enhanceImageQuality(ctx, width, height) {
+            try {
+                // 獲取圖片像素數據
+                const imageData = ctx.getImageData(0, 0, width, height);
+                const data = imageData.data;
+
+                // 增強對比度和銳化
+                for (let i = 0; i < data.length; i += 4) {
+                    // RGB 值
+                    let r = data[i];
+                    let g = data[i + 1];
+                    let b = data[i + 2];
+
+                    // 增強對比度 (提高白色和黑色的對比)
+                    r = Math.min(255, Math.max(0, ((r - 128) * 1.2) + 128));
+                    g = Math.min(255, Math.max(0, ((g - 128) * 1.2) + 128));
+                    b = Math.min(255, Math.max(0, ((b - 128) * 1.2) + 128));
+
+                    // 輕微的銳化處理 (增強邊緣)
+                    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                    if (gray > 200) {
+                        // 亮區域更白
+                        r = Math.min(255, r * 1.05);
+                        g = Math.min(255, g * 1.05);
+                        b = Math.min(255, b * 1.05);
+                    } else if (gray < 50) {
+                        // 暗區域更暗
+                        r = Math.max(0, r * 0.95);
+                        g = Math.max(0, g * 0.95);
+                        b = Math.max(0, b * 0.95);
+                    }
+
+                    data[i] = r;
+                    data[i + 1] = g;
+                    data[i + 2] = b;
+                }
+
+                // 將處理後的數據寫回 canvas
+                ctx.putImageData(imageData, 0, 0);
+
+            } catch (error) {
+                console.warn('圖片增強處理失敗:', error);
+                // 如果處理失敗，繼續使用原圖
+            }
+        }
+
+        // 添加調整按鈕到預覽區域
+        function addAdjustmentButton(side) {
+            const previewBox = document.getElementById(side + 'Preview').parentElement;
+            let adjustBtn = document.getElementById(side + 'AdjustBtn');
+
+            if (!adjustBtn) {
+                adjustBtn = document.createElement('button');
+                adjustBtn.id = side + 'AdjustBtn';
+                adjustBtn.className = 'adjustment-btn';
+                adjustBtn.style.marginTop = '10px';
+                adjustBtn.innerHTML = '⚙️ 微調圖片';
+                adjustBtn.onclick = () => openAdjustmentPanel(side);
+
+                // 插入到預覽圖片之後
+                const preview = document.getElementById(side + 'Preview');
+                preview.parentNode.insertBefore(adjustBtn, preview.nextSibling);
+            }
+        }
+
+        // 開啟圖片調整面板
+        function openAdjustmentPanel(side) {
+            const panel = document.getElementById(side + 'AdjustmentPanel');
+            const canvas = document.getElementById(side + 'AdjustmentCanvas');
+
+            panel.style.display = 'block';
+            canvas.style.display = 'block';
+
+            // 初始化調整預覽
+            updateAdjustmentPreview(side);
+
+            // 滾動到調整面板
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // 關閉圖片調整面板
+        function closeAdjustmentPanel(side) {
+            const panel = document.getElementById(side + 'AdjustmentPanel');
+            panel.style.display = 'none';
+        }
+
+        // 旋轉圖片
+        function rotateImage(side, degrees) {
+            const state = window[side + 'AdjustmentState'];
+            state.rotation = (state.rotation + degrees) % 360;
+            updateAdjustmentPreview(side);
+        }
+
+        // 縮放圖片
+        function scaleImage(side, factor) {
+            const state = window[side + 'AdjustmentState'];
+            state.scale = Math.max(0.5, Math.min(3, state.scale * factor)); // 限制縮放範圍
+            updateAdjustmentPreview(side);
+        }
+
+        // 移動圖片位置
+        function moveImage(side, deltaX, deltaY) {
+            const state = window[side + 'AdjustmentState'];
+            state.offsetX += deltaX;
+            state.offsetY += deltaY;
+            updateAdjustmentPreview(side);
+        }
+
+        // 重置圖片位置
+        function resetImagePosition(side) {
+            const state = window[side + 'AdjustmentState'];
+            state.offsetX = 0;
+            state.offsetY = 0;
+            updateAdjustmentPreview(side);
+        }
+
+        // 重置所有調整
+        function resetAllAdjustments(side) {
+            window[side + 'AdjustmentState'] = {
+                rotation: 0,
+                scale: 1,
+                offsetX: 0,
+                offsetY: 0
+            };
+            updateAdjustmentPreview(side);
+        }
+
+        // 更新調整預覽
+        function updateAdjustmentPreview(side) {
+            const canvas = document.getElementById(side + 'AdjustmentCanvas');
+            const ctx = canvas.getContext('2d');
+            const imageData = window[side + 'OriginalImageData'];
+            const state = window[side + 'AdjustmentState'];
+
+            if (!imageData) return;
+
+            const img = new Image();
+            img.onload = function () {
+                // 設定 canvas 尺寸
+                const maxWidth = 300;
+                const maxHeight = 200;
+                let canvasWidth, canvasHeight;
+
+                if (state.rotation % 180 === 0) {
+                    canvasWidth = Math.min(maxWidth, img.width);
+                    canvasHeight = Math.min(maxHeight, img.height);
+                } else {
+                    canvasWidth = Math.min(maxWidth, img.height);
+                    canvasHeight = Math.min(maxHeight, img.width);
+                }
+
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+
+                // 清除 canvas
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+                // 保存當前狀態
+                ctx.save();
+
+                // 移動到中心點
+                ctx.translate(canvasWidth / 2, canvasHeight / 2);
+
+                // 應用旋轉
+                ctx.rotate(state.rotation * Math.PI / 180);
+
+                // 應用縮放
+                ctx.scale(state.scale, state.scale);
+
+                // 計算圖片尺寸以適應 canvas
+                let drawWidth, drawHeight;
+                if (state.rotation % 180 === 0) {
+                    drawWidth = Math.min(canvasWidth, img.width);
+                    drawHeight = Math.min(canvasHeight, img.height);
+                } else {
+                    drawWidth = Math.min(canvasHeight, img.width);
+                    drawHeight = Math.min(canvasWidth, img.height);
+                }
+
+                // 繪製圖片 (從中心點偏移)
+                ctx.drawImage(img,
+                    -drawWidth / 2 + state.offsetX,
+                    -drawHeight / 2 + state.offsetY,
+                    drawWidth,
+                    drawHeight);
+
+                // 恢復狀態
+                ctx.restore();
+            };
+            img.src = imageData;
+        }
+
+        // 套用調整
+        function applyAdjustments(side) {
+            const canvas = document.getElementById(side + 'AdjustmentCanvas');
+            const state = window[side + 'AdjustmentState'];
+
+            // 創建最終的調整圖片
+            canvas.toBlob(function (blob) {
+                if (blob) {
+                    // 創建新的檔案
+                    const adjustedFile = new File([blob], `${side}_adjusted.jpg`, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+
+                    // 更新檔案 input
+                    const input = document.getElementById(side + 'Image');
+                    const dt = new DataTransfer();
+                    dt.items.add(adjustedFile);
+                    input.files = dt.files;
+
+                    // 更新預覽圖片
+                    const preview = document.getElementById(side + 'Preview');
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        window[side + 'CurrentImageData'] = e.target.result;
+                    };
+                    reader.readAsDataURL(adjustedFile);
+
+                    // 更新檔案資訊
+                    const infoElement = document.getElementById(side + 'ImageInfo');
+                    infoElement.innerHTML = `✅ 已調整：<strong>${adjustedFile.name}</strong> (${formatFileSize(adjustedFile.size)})<br>
+                        旋轉: ${state.rotation}°, 縮放: ${(state.scale * 100).toFixed(0)}%, 偏移: ${state.offsetX},${state.offsetY}`;
+
+                    // 關閉調整面板
+                    closeAdjustmentPanel(side);
+
+                    alert('✅ 圖片調整已套用！');
+                }
+            }, 'image/jpeg', 0.9);
+        }
+
+        // 拖拽上傳功能
+        document.querySelectorAll('.upload-area').forEach(area => {
+            area.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+
+            area.addEventListener('dragleave', function (e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+
+            area.addEventListener('drop', function (e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const input = this.parentElement.querySelector('input[type="file"]');
+
+                    // 檢查檔案類型
+                    const file = files[0];
+                    if (!file.type.match('image/(jpeg|jpg|png)')) {
+                        alert('請選擇 JPG 或 PNG 格式的圖片！');
+                        return;
+                    }
+
+                    // 檢查檔案大小
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('檔案大小不能超過 10MB！');
+                        return;
+                    }
+
+                    // 設定檔案到 input 並觸發處理
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                    input.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        // 表單提交處理
+        document.getElementById('uploadForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // 顯示進度條
+            progressContainer.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.textContent = '上傳中...';
+
+            // 模擬上傳進度
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+                progressText.textContent = `上傳中... ${Math.round(progress)}%`;
+            }, 200);
+
+            // 發送請求
+            fetch('/id-card/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    clearInterval(progressInterval);
+                    progressFill.style.width = '100%';
+                    progressText.textContent = '處理完成！';
+
+                    setTimeout(() => {
+                        if (data.success) {
+                            // 顯示 AI 驗證結果
+                            if (data.aiValidation) {
+                                displayAiValidationResults(data.aiValidation);
+                            }
+
+                            alert('🎉 ' + data.message);
+
+                            // 不要重新載入頁面，讓用戶查看 AI 驗證結果
+                            progressContainer.style.display = 'none';
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = '🚀 重新上傳';
+                        } else {
+                            alert('❌ ' + data.message);
+                            progressContainer.style.display = 'none';
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = '🚀 開始上傳';
+                        }
+                    }, 1000);
+                })
+                .catch(error => {
+                    clearInterval(progressInterval);
+                    alert('❌ 上傳失敗：' + error.message);
+                    progressContainer.style.display = 'none';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '🚀 開始上傳';
+                });
+        });
+
+        // 顯示 AI 驗證結果
+        function displayAiValidationResults(aiValidation) {
+            const container = document.getElementById('aiResultContainer');
+            const content = document.getElementById('aiResultContent');
+
+            let html = '';
+
+            // 正面驗證結果
+            const frontClass = aiValidation.frontResult.valid ? 'ai-result-success' : 'ai-result-error';
+            html += `
+                <div class="ai-result-item ${frontClass}">
+                    <strong>📄 正面驗證：</strong>
+                    <div>${aiValidation.frontResult.message}</div>
+                    ${aiValidation.frontResult.extractedText ?
+                    `<div class="ai-extracted-text">
+                            <strong>識別到的文字：</strong><br>
+                            ${aiValidation.frontResult.extractedText.replace(/\n/g, '<br>')}
+                        </div>` : ''}
+                </div>
+            `;
+
+            // 反面驗證結果
+            const backClass = aiValidation.backResult.valid ? 'ai-result-success' : 'ai-result-error';
+            html += `
+                <div class="ai-result-item ${backClass}">
+                    <strong>📄 反面驗證：</strong>
+                    <div>${aiValidation.backResult.message}</div>
+                    ${aiValidation.backResult.extractedText ?
+                    `<div class="ai-extracted-text">
+                            <strong>識別到的文字：</strong><br>
+                            ${aiValidation.backResult.extractedText.replace(/\n/g, '<br>')}
+                        </div>` : ''}
+                </div>
+            `;
+
+            // 總體結果
+            const overallClass = aiValidation.passed ? 'ai-result-success' : 'ai-result-warning';
+            html += `
+                <div class="ai-result-item ${overallClass}">
+                    <strong>🎯 總體驗證：</strong>
+                    <div>${aiValidation.passed ? '✅ AI驗證通過' : '⚠️ AI驗證未完全通過，請檢查圖片品質'}</div>
+                </div>
+            `;
+
+            content.innerHTML = html;
+            container.style.display = 'block';
+
+            // 滾動到結果區域
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>
