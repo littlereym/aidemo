@@ -69,18 +69,16 @@ public class IdCardController {
                 return "redirect:/id-card/upload";
             }
 
-            // 🔍 進行圖像識別驗證
+            // 🔍 只對正面圖片的姓名區域進行驗證，提高準確率
             StringBuilder aiResults = new StringBuilder();
 
-            // 驗證正面
-            ImageValidationResult frontValidation = imageRecognitionService.validateIdCard(
+            // 只驗證正面姓名區域
+            ImageValidationResult frontValidation = imageRecognitionService.validateNameRegionOnly(
                     frontImage.getBytes(), userName);
-            aiResults.append("🔍 正面驗證：").append(frontValidation.getMessage()).append("\n");
+            aiResults.append("🔍 正面姓名驗證：").append(frontValidation.getMessage()).append("\n");
 
-            // 驗證反面
-            ImageValidationResult backValidation = imageRecognitionService.validateIdCard(
-                    backImage.getBytes(), userName);
-            aiResults.append("🔍 反面驗證：").append(backValidation.getMessage()).append("\n");
+            // 反面圖片不進行AI驗證
+            aiResults.append("🔍 反面圖片：✅ 已上傳（跳過AI驗證以提高準確率）").append("\n");
 
             // 產生檔案名稱
             String frontFileName = generateFileName(userName, "front", frontImage.getOriginalFilename());
@@ -90,14 +88,14 @@ public class IdCardController {
             saveFile(frontImage, frontFileName);
             saveFile(backImage, backFileName);
 
-            // 根據AI驗證結果設定訊息
-            if (frontValidation.isValid() || backValidation.isValid()) {
+            // 根據AI驗證結果設定訊息（現在只檢查正面姓名區域）
+            if (frontValidation.isValid()) {
                 redirectAttributes.addFlashAttribute("success",
                         String.format("🎉 %s 的身分證上傳成功！\n\n%s\n正面檔案：%s\n反面檔案：%s",
                                 userName, aiResults.toString(), frontFileName, backFileName));
             } else {
                 redirectAttributes.addFlashAttribute("error",
-                        String.format("⚠️ %s 的身分證已上傳，但AI驗證發現問題：\n\n%s\n\n檔案已保存：\n正面：%s\n反面：%s",
+                        String.format("⚠️ %s 的身分證已上傳，但姓名驗證未通過：\n\n%s\n\n檔案已保存：\n正面：%s\n反面：%s",
                                 userName, aiResults.toString(), frontFileName, backFileName));
             }
 
@@ -134,11 +132,13 @@ public class IdCardController {
                 return response;
             }
 
-            // 🔍 進行圖像識別驗證
-            ImageValidationResult frontValidation = imageRecognitionService.validateIdCard(
+            // 🔍 只對正面圖片的姓名區域進行驗證，提高準確率
+            ImageValidationResult frontValidation = imageRecognitionService.validateNameRegionOnly(
                     frontImage.getBytes(), userName);
-            ImageValidationResult backValidation = imageRecognitionService.validateIdCard(
-                    backImage.getBytes(), userName);
+
+            // 反面圖片不進行AI驗證，只檢查基本格式
+            ImageValidationResult backValidation = new ImageRecognitionService.ImageValidationResult(
+                    true, true, true, "", "✅ 反面圖片已上傳");
 
             // 產生檔案名稱
             String frontFileName = generateFileName(userName, "front", frontImage.getOriginalFilename());
@@ -148,11 +148,11 @@ public class IdCardController {
             saveFile(frontImage, frontFileName);
             saveFile(backImage, backFileName);
 
-            // 設定回應資料
-            boolean aiValidationPassed = frontValidation.isValid() || backValidation.isValid();
+            // 設定回應資料（現在只檢查正面姓名區域）
+            boolean aiValidationPassed = frontValidation.isValid();
 
             response.put("success", true);
-            response.put("message", aiValidationPassed ? "身分證上傳並驗證成功！" : "身分證已上傳，但AI驗證發現問題");
+            response.put("message", aiValidationPassed ? "身分證上傳並驗證成功！" : "身分證已上傳，但姓名驗證未通過");
             response.put("aiValidation", Map.of(
                     "passed", aiValidationPassed,
                     "frontResult", Map.of(
@@ -163,7 +163,7 @@ public class IdCardController {
                     "backResult", Map.of(
                             "valid", backValidation.isValid(),
                             "message", backValidation.getMessage(),
-                            "extractedText", backValidation.getExtractedText()
+                            "extractedText", "跳過反面驗證以提高準確率"
                     )
             ));
             response.put("data", Map.of(
@@ -245,6 +245,134 @@ public class IdCardController {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String extension = getFileExtension(originalFilename);
         return String.format("%s_%s_%s%s", userName, side, timestamp, extension);
+    }
+
+    /**
+     * 區域 OCR 識別 API
+     */
+    @PostMapping("/api/ocr-region")
+    @ResponseBody
+    @Operation(summary = "🎯 區域 OCR 識別", description = "對圖片中的特定區域進行 OCR 文字識別")
+    public Map<String, Object> ocrRegion(
+            @RequestParam("image") MultipartFile image,
+            @RequestParam("regionType") String regionType,
+            @RequestParam("side") String side) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 檢查檔案是否存在
+            if (image.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "沒有接收到圖片檔案");
+                return response;
+            }
+
+            // 檢查檔案類型
+            String contentType = image.getContentType();
+            if (contentType == null
+                    || (!contentType.equals("image/jpeg")
+                    && !contentType.equals("image/jpg")
+                    && !contentType.equals("image/png"))) {
+                response.put("success", false);
+                response.put("message", "不支援的檔案格式，請使用 JPG 或 PNG");
+                return response;
+            }
+
+            // 檢查檔案大小 (5MB 限制)
+            if (image.getSize() > 5 * 1024 * 1024) {
+                response.put("success", false);
+                response.put("message", "檔案大小不能超過 5MB");
+                return response;
+            }
+
+            // 執行 OCR 識別
+            ImageRecognitionService.OCRResult ocrResult = imageRecognitionService.performOCR(image);
+
+            if (ocrResult != null && ocrResult.getExtractedText() != null && !ocrResult.getExtractedText().trim().isEmpty()) {
+                // 根據區域類型進行特定的文字處理和驗證
+                String processedText = processRegionText(ocrResult.getExtractedText(), regionType, side);
+
+                Map<String, Object> result = new HashMap<>();
+                result.put("extractedText", processedText);
+                result.put("originalText", ocrResult.getExtractedText());
+                result.put("confidence", ocrResult.getConfidence());
+                result.put("regionType", regionType);
+                result.put("side", side);
+
+                response.put("success", true);
+                response.put("message", "OCR 識別成功");
+                response.put("result", result);
+
+                // 記錄識別結果
+                System.out.println("🎯 區域 OCR 識別成功 - " + side + " " + regionType + ": " + processedText);
+
+            } else {
+                response.put("success", false);
+                response.put("message", "未能從圖片中識別出文字，請檢查圖片品質");
+            }
+
+        } catch (Exception e) {
+            System.err.println("❌ 區域 OCR 識別失敗: " + e.getMessage());
+
+            response.put("success", false);
+            response.put("message", "OCR 識別過程中發生錯誤: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * 根據區域類型處理識別出的文字
+     */
+    private String processRegionText(String rawText, String regionType, @SuppressWarnings("unused") String side) {
+        if (rawText == null) {
+            return "";
+        }
+
+        String cleanText = rawText.replaceAll("\\s+", " ").trim();
+
+        return switch (regionType) {
+            case "name" ->
+                // 姓名區域：移除非中文字符，保留中文姓名
+                cleanText.replaceAll("[^\\u4e00-\\u9fa5]", "");
+
+            case "id" -> {
+                // 身分證號：提取數字和字母組合，並進行格式驗證
+                String idText = cleanText.replaceAll("[^A-Z0-9a-z]", "").toUpperCase();
+
+                // 嘗試匹配台灣身分證號碼格式 (1個英文字母 + 9個數字)
+                java.util.regex.Pattern idPattern = java.util.regex.Pattern.compile("[A-Z][0-9]{9}");
+                java.util.regex.Matcher matcher = idPattern.matcher(idText);
+
+                if (matcher.find()) {
+                    yield matcher.group(); // 返回找到的完整身分證號
+                } else {
+                    // 如果沒找到完整格式，返回所有英數字元
+                    yield idText;
+                }
+            }
+
+            case "address" ->
+                // 地址區域：保留中文和數字
+                cleanText.replaceAll("[^\\u4e00-\\u9fa50-9]", "");
+
+            case "office" ->
+                // 發證機關：保留中文
+                cleanText.replaceAll("[^\\u4e00-\\u9fa5]", "");
+
+            case "date" ->
+                // 日期：提取數字和斜線
+                cleanText.replaceAll("[^0-9/年月日]", "");
+
+            case "spouse" ->
+                // 配偶：保留中文
+                cleanText.replaceAll("[^\\u4e00-\\u9fa5]", "");
+
+            default ->
+                // 其他情況：返回清理後的原文
+                cleanText;
+        };
     }
 
     /**

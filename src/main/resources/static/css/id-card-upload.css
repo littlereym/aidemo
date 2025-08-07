@@ -1,0 +1,584 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Microsoft JhengHei', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.header p {
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+.form-container {
+    padding: 40px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-group input[type="text"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.upload-area {
+    border: 3px dashed #ddd;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    background: #f9f9f9;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: #4CAF50;
+    background: #f0f8f0;
+}
+
+.upload-area.dragover {
+    border-color: #4CAF50;
+    background: #e8f5e8;
+}
+
+.upload-icon {
+    font-size: 3em;
+    color: #4CAF50;
+    margin-bottom: 15px;
+}
+
+.upload-text {
+    font-size: 1.1em;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.file-input {
+    display: none;
+}
+
+.upload-btn {
+    background: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.upload-btn:hover {
+    background: #45a049;
+}
+
+.preview-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 2px dashed #e0e0e0;
+}
+
+.preview-box {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-box h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.preview-image:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+.preview-placeholder {
+    width: 100%;
+    height: 150px;
+    background: #f0f0f0;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 0.9em;
+}
+
+.file-info {
+    background: #e8f5e8;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #2e7d32;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 30px;
+    transition: all 0.3s;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+.submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.file-info {
+    background: #e9f7ef;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #27ae60;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #4CAF50;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.ai-result-container {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    display: none;
+}
+
+.ai-result-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.ai-result-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #ddd;
+}
+
+.ai-result-success {
+    background: #d4edda;
+    border-left-color: #28a745;
+    color: #155724;
+}
+
+.ai-result-warning {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+    color: #856404;
+}
+
+.ai-result-error {
+    background: #f8d7da;
+    border-left-color: #dc3545;
+    color: #721c24;
+}
+
+.ai-extracted-text {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f1f3f4;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 0.9em;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+/* 圖片調整控制面板樣式 */
+.image-adjustment-panel {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    display: none;
+}
+
+.adjustment-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.control-label {
+    font-size: 0.8em;
+    color: #666;
+    font-weight: bold;
+}
+
+.adjustment-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background 0.3s;
+    min-width: 60px;
+}
+
+.adjustment-btn:hover {
+    background: #45a049;
+}
+
+.adjustment-btn.secondary {
+    background: #2196F3;
+}
+
+.adjustment-btn.secondary:hover {
+    background: #1976D2;
+}
+
+.adjustment-slider {
+    width: 100px;
+    margin: 0 5px;
+}
+
+.position-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    max-width: 120px;
+}
+
+.position-btn {
+    background: #FF9800;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.7em;
+    min-height: 30px;
+}
+
+.position-btn:hover {
+    background: #F57C00;
+}
+
+.adjustment-canvas {
+    max-width: 100%;
+    max-height: 250px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    margin: 10px auto;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.reset-btn {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+
+.reset-btn:hover {
+    background: #d32f2f;
+}
+
+@media (max-width: 768px) {
+    .preview-container {
+        flex-direction: column;
+    }
+
+    .form-container {
+        padding: 20px;
+    }
+
+    .header h1 {
+        font-size: 2em;
+    }
+
+    .adjustment-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .control-group {
+        width: 100%;
+    }
+}
+
+/* 區域選擇功能樣式 */
+.region-selection-container {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    display: none;
+}
+
+.region-selection-title {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.region-canvas-container {
+    position: relative;
+    display: inline-block;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0 auto;
+    display: block;
+    max-width: 100%;
+}
+
+.region-selection-canvas {
+    display: block;
+    max-width: 100%;
+    cursor: crosshair;
+}
+
+.selection-rectangle {
+    position: absolute;
+    border: 2px dashed #4CAF50;
+    background-color: rgba(76, 175, 80, 0.1);
+    pointer-events: none;
+    display: none;
+}
+
+.region-templates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.template-btn {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s;
+}
+
+.template-btn:hover {
+    background: #1976D2;
+}
+
+.template-btn.active {
+    background: #FF9800;
+}
+
+.region-preview {
+    margin-top: 15px;
+    padding: 10px;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    display: none;
+}
+
+.region-preview-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.region-preview-canvas {
+    max-width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.region-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.region-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s;
+}
+
+.region-btn:hover {
+    background: #45a049;
+}
+
+.region-btn.secondary {
+    background: #9E9E9E;
+}
+
+.region-btn.secondary:hover {
+    background: #757575;
+}
+
+.region-btn.danger {
+    background: #f44336;
+}
+
+.region-btn.danger:hover {
+    background: #d32f2f;
+}
+
+@media (max-width: 768px) {
+    .region-templates {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .template-btn {
+        width: 100%;
+        max-width: 200px;
+    }
+
+    .region-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .region-btn {
+        width: 100%;
+        max-width: 200px;
+    }
+}

@@ -5,441 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📄 身分證上傳系統</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Microsoft JhengHei', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .form-container {
-            padding: 40px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #333;
-            font-size: 1.1em;
-        }
-
-        .form-group input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input[type="text"]:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
-
-        .upload-area {
-            border: 3px dashed #ddd;
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            background: #f9f9f9;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .upload-area:hover {
-            border-color: #4CAF50;
-            background: #f0f8f0;
-        }
-
-        .upload-area.dragover {
-            border-color: #4CAF50;
-            background: #e8f5e8;
-        }
-
-        .upload-icon {
-            font-size: 3em;
-            color: #4CAF50;
-            margin-bottom: 15px;
-        }
-
-        .upload-text {
-            font-size: 1.1em;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .upload-btn {
-            background: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-
-        .upload-btn:hover {
-            background: #45a049;
-        }
-
-        .preview-container {
-            display: flex;
-            gap: 20px;
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 2px dashed #e0e0e0;
-        }
-
-        .preview-box {
-            flex: 1;
-            text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .preview-box h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-
-        .preview-image {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            border: 2px solid #ddd;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .preview-image:hover {
-            transform: scale(1.05);
-            cursor: pointer;
-        }
-
-        .preview-placeholder {
-            width: 100%;
-            height: 150px;
-            background: #f0f0f0;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 0.9em;
-        }
-
-        .file-info {
-            background: #e8f5e8;
-            padding: 8px 12px;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: #2e7d32;
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
-            padding: 15px 40px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 30px;
-            transition: all 0.3s;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
-        }
-
-        .submit-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .file-info {
-            background: #e9f7ef;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: #27ae60;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #f0f0f0;
-            border-radius: 3px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #4CAF50;
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .ai-result-container {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            display: none;
-        }
-
-        .ai-result-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .ai-result-item {
-            margin-bottom: 15px;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #ddd;
-        }
-
-        .ai-result-success {
-            background: #d4edda;
-            border-left-color: #28a745;
-            color: #155724;
-        }
-
-        .ai-result-warning {
-            background: #fff3cd;
-            border-left-color: #ffc107;
-            color: #856404;
-        }
-
-        .ai-result-error {
-            background: #f8d7da;
-            border-left-color: #dc3545;
-            color: #721c24;
-        }
-
-        .ai-extracted-text {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f1f3f4;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 0.9em;
-            max-height: 100px;
-            overflow-y: auto;
-        }
-
-        /* 圖片調整控制面板樣式 */
-        .image-adjustment-panel {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-            display: none;
-        }
-
-        .adjustment-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .control-label {
-            font-size: 0.8em;
-            color: #666;
-            font-weight: bold;
-        }
-
-        .adjustment-btn {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.85em;
-            transition: background 0.3s;
-            min-width: 60px;
-        }
-
-        .adjustment-btn:hover {
-            background: #45a049;
-        }
-
-        .adjustment-btn.secondary {
-            background: #2196F3;
-        }
-
-        .adjustment-btn.secondary:hover {
-            background: #1976D2;
-        }
-
-        .adjustment-slider {
-            width: 100px;
-            margin: 0 5px;
-        }
-
-        .position-controls {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            max-width: 120px;
-        }
-
-        .position-btn {
-            background: #FF9800;
-            color: white;
-            border: none;
-            padding: 5px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.7em;
-            min-height: 30px;
-        }
-
-        .position-btn:hover {
-            background: #F57C00;
-        }
-
-        .adjustment-canvas {
-            max-width: 100%;
-            max-height: 250px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            margin: 10px auto;
-            display: block;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .reset-btn {
-            background: #f44336;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8em;
-        }
-
-        .reset-btn:hover {
-            background: #d32f2f;
-        }
-
-        @media (max-width: 768px) {
-            .preview-container {
-                flex-direction: column;
-            }
-
-            .form-container {
-                padding: 20px;
-            }
-
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .adjustment-controls {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .control-group {
-                width: 100%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/css/id-card-upload.css">
 </head>
 
 <body>
@@ -449,6 +15,7 @@
             <p>請上傳您的台灣身分證正反面照片，系統將使用 AI 進行圖像識別與驗證</p>
             <p style="font-size: 0.9em; opacity: 0.8;">🤖 支援矩形比例檢測、OCR文字識別、姓名驗證</p>
             <p style="font-size: 0.85em; opacity: 0.8;">🔄 前端自動修正圖片方向、比例調整、畫質優化</p>
+            <p style="font-size: 0.85em; color: #2196F3; font-weight: 500;">✨ 新版本：只檢查正面姓名區域，提高識別準確率</p>
         </div>
 
         <div class="form-container">
@@ -473,7 +40,7 @@
                         <div class="upload-text" style="font-size: 0.9em; color: #999;">
                             支援 JPG、PNG 格式，檔案大小不超過 10MB<br>
                             🔄 前端將自動修正方向、調整比例並優化畫質<br>
-                            AI 將檢測：比例、姓名、身分證號碼
+                            🎯 AI 只檢測姓名區域，提高準確率
                         </div>
                         <button type="button" class="upload-btn">選擇檔案</button>
                     </div>
@@ -491,7 +58,7 @@
                         <div class="upload-text" style="font-size: 0.9em; color: #999;">
                             支援 JPG、PNG 格式，檔案大小不超過 10MB<br>
                             🔄 前端將自動修正方向、調整比例並優化畫質<br>
-                            AI 將檢測：比例、發證機關、其他資訊
+                            📁 反面圖片僅上傳，不進行AI驗證
                         </div>
                         <button type="button" class="upload-btn">選擇檔案</button>
                     </div>
@@ -519,8 +86,10 @@
                                 <div class="control-group">
                                     <div class="control-label">旋轉</div>
                                     <div>
-                                        <button class="adjustment-btn" onclick="rotateImage('front', -90)">↺ 左轉</button>
-                                        <button class="adjustment-btn" onclick="rotateImage('front', 90)">↻ 右轉</button>
+                                        <button type="button" class="adjustment-btn"
+                                            onclick="rotateImage('front', -90, event)">↺ 左轉</button>
+                                        <button type="button" class="adjustment-btn"
+                                            onclick="rotateImage('front', 90, event)">↻ 右轉</button>
                                     </div>
                                 </div>
 
@@ -528,10 +97,10 @@
                                 <div class="control-group">
                                     <div class="control-label">縮放</div>
                                     <div>
-                                        <button class="adjustment-btn secondary"
-                                            onclick="scaleImage('front', 0.9)">縮小</button>
-                                        <button class="adjustment-btn secondary"
-                                            onclick="scaleImage('front', 1.1)">放大</button>
+                                        <button type="button" class="adjustment-btn secondary"
+                                            onclick="scaleImage('front', 0.9, event)">縮小</button>
+                                        <button type="button" class="adjustment-btn secondary"
+                                            onclick="scaleImage('front', 1.1, event)">放大</button>
                                     </div>
                                 </div>
 
@@ -540,13 +109,18 @@
                                     <div class="control-label">位置</div>
                                     <div class="position-controls">
                                         <div></div>
-                                        <button class="position-btn" onclick="moveImage('front', 0, -10)">↑</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="moveImage('front', 0, -10, event)">↑</button>
                                         <div></div>
-                                        <button class="position-btn" onclick="moveImage('front', -10, 0)">←</button>
-                                        <button class="position-btn" onclick="resetImagePosition('front')">●</button>
-                                        <button class="position-btn" onclick="moveImage('front', 10, 0)">→</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="moveImage('front', -10, 0, event)">←</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="resetImagePosition('front', event)">●</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="moveImage('front', 10, 0, event)">→</button>
                                         <div></div>
-                                        <button class="position-btn" onclick="moveImage('front', 0, 10)">↓</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="moveImage('front', 0, 10, event)">↓</button>
                                         <div></div>
                                     </div>
                                 </div>
@@ -554,7 +128,8 @@
                                 <!-- 重置按鈕 -->
                                 <div class="control-group">
                                     <div class="control-label">重置</div>
-                                    <button class="reset-btn" onclick="resetAllAdjustments('front')">🔄 重置</button>
+                                    <button type="button" class="reset-btn"
+                                        onclick="resetAllAdjustments('front', event)">🔄 重置</button>
                                 </div>
                             </div>
 
@@ -563,9 +138,52 @@
                                 style="display: none;"></canvas>
 
                             <div style="text-align: center; margin-top: 10px;">
-                                <button class="adjustment-btn" onclick="applyAdjustments('front')">✅ 套用調整</button>
-                                <button class="adjustment-btn secondary" onclick="closeAdjustmentPanel('front')">❌
+                                <button type="button" class="adjustment-btn"
+                                    onclick="applyAdjustments('front', event)">✅ 套用調整</button>
+                                <button type="button" class="adjustment-btn secondary"
+                                    onclick="closeAdjustmentPanel('front', event)">❌
                                     取消</button>
+                            </div>
+                        </div>
+
+                        <!-- 正面區域選擇面板 -->
+                        <div id="frontRegionPanel" class="region-selection-container">
+                            <div class="region-selection-title">🎯 選擇識別區域</div>
+
+                            <!-- 預設區域模板 -->
+                            <div class="region-templates">
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('front', 'name', event)">👤 姓名區</button>
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('front', 'id', event)">🆔 身分證號(英數)</button>
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('front', 'address', event)">🏠 地址區</button>
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('front', 'full', event)">📄 全區域</button>
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('front', 'custom', event)">✏️ 自訂選擇</button>
+                            </div>
+
+                            <!-- 區域選擇畫布 -->
+                            <div class="region-canvas-container">
+                                <canvas id="frontRegionCanvas" class="region-selection-canvas"></canvas>
+                                <div id="frontSelectionRect" class="selection-rectangle"></div>
+                            </div>
+
+                            <!-- 選中區域預覽 -->
+                            <div id="frontRegionPreview" class="region-preview">
+                                <div class="region-preview-title">選中區域預覽：</div>
+                                <canvas id="frontPreviewCanvas" class="region-preview-canvas"></canvas>
+                            </div>
+
+                            <!-- 控制按鈕 -->
+                            <div class="region-controls">
+                                <button type="button" class="region-btn" onclick="startOCRRegion('front', event)">🤖
+                                    識別此區域</button>
+                                <button type="button" class="region-btn secondary"
+                                    onclick="clearRegionSelection('front', event)">🧹 清除選擇</button>
+                                <button type="button" class="region-btn danger"
+                                    onclick="closeRegionPanel('front', event)">❌ 關閉</button>
                             </div>
                         </div>
                     </div>
@@ -586,8 +204,10 @@
                                 <div class="control-group">
                                     <div class="control-label">旋轉</div>
                                     <div>
-                                        <button class="adjustment-btn" onclick="rotateImage('back', -90)">↺ 左轉</button>
-                                        <button class="adjustment-btn" onclick="rotateImage('back', 90)">↻ 右轉</button>
+                                        <button type="button" class="adjustment-btn"
+                                            onclick="rotateImage('back', -90, event)">↺ 左轉</button>
+                                        <button type="button" class="adjustment-btn"
+                                            onclick="rotateImage('back', 90, event)">↻ 右轉</button>
                                     </div>
                                 </div>
 
@@ -595,10 +215,10 @@
                                 <div class="control-group">
                                     <div class="control-label">縮放</div>
                                     <div>
-                                        <button class="adjustment-btn secondary"
-                                            onclick="scaleImage('back', 0.9)">縮小</button>
-                                        <button class="adjustment-btn secondary"
-                                            onclick="scaleImage('back', 1.1)">放大</button>
+                                        <button type="button" class="adjustment-btn secondary"
+                                            onclick="scaleImage('back', 0.9, event)">縮小</button>
+                                        <button type="button" class="adjustment-btn secondary"
+                                            onclick="scaleImage('back', 1.1, event)">放大</button>
                                     </div>
                                 </div>
 
@@ -607,13 +227,18 @@
                                     <div class="control-label">位置</div>
                                     <div class="position-controls">
                                         <div></div>
-                                        <button class="position-btn" onclick="moveImage('back', 0, -10)">↑</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="moveImage('back', 0, -10, event)">↑</button>
                                         <div></div>
-                                        <button class="position-btn" onclick="moveImage('back', -10, 0)">←</button>
-                                        <button class="position-btn" onclick="resetImagePosition('back')">●</button>
-                                        <button class="position-btn" onclick="moveImage('back', 10, 0)">→</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="moveImage('back', -10, 0, event)">←</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="resetImagePosition('back', event)">●</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="moveImage('back', 10, 0, event)">→</button>
                                         <div></div>
-                                        <button class="position-btn" onclick="moveImage('back', 0, 10)">↓</button>
+                                        <button type="button" class="position-btn"
+                                            onclick="moveImage('back', 0, 10, event)">↓</button>
                                         <div></div>
                                     </div>
                                 </div>
@@ -621,7 +246,8 @@
                                 <!-- 重置按鈕 -->
                                 <div class="control-group">
                                     <div class="control-label">重置</div>
-                                    <button class="reset-btn" onclick="resetAllAdjustments('back')">🔄 重置</button>
+                                    <button type="button" class="reset-btn"
+                                        onclick="resetAllAdjustments('back', event)">🔄 重置</button>
                                 </div>
                             </div>
 
@@ -629,9 +255,52 @@
                             <canvas id="backAdjustmentCanvas" class="adjustment-canvas" style="display: none;"></canvas>
 
                             <div style="text-align: center; margin-top: 10px;">
-                                <button class="adjustment-btn" onclick="applyAdjustments('back')">✅ 套用調整</button>
-                                <button class="adjustment-btn secondary" onclick="closeAdjustmentPanel('back')">❌
+                                <button type="button" class="adjustment-btn" onclick="applyAdjustments('back', event)">✅
+                                    套用調整</button>
+                                <button type="button" class="adjustment-btn secondary"
+                                    onclick="closeAdjustmentPanel('back', event)">❌
                                     取消</button>
+                            </div>
+                        </div>
+
+                        <!-- 反面區域選擇面板 -->
+                        <div id="backRegionPanel" class="region-selection-container">
+                            <div class="region-selection-title">🎯 選擇識別區域</div>
+
+                            <!-- 預設區域模板 -->
+                            <div class="region-templates">
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('back', 'office', event)">🏢 發證機關</button>
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('back', 'date', event)">📅 發證日期</button>
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('back', 'spouse', event)">💑 配偶欄</button>
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('back', 'full', event)">📄 全區域</button>
+                                <button type="button" class="template-btn"
+                                    onclick="selectTemplate('back', 'custom', event)">✏️ 自訂選擇</button>
+                            </div>
+
+                            <!-- 區域選擇畫布 -->
+                            <div class="region-canvas-container">
+                                <canvas id="backRegionCanvas" class="region-selection-canvas"></canvas>
+                                <div id="backSelectionRect" class="selection-rectangle"></div>
+                            </div>
+
+                            <!-- 選中區域預覽 -->
+                            <div id="backRegionPreview" class="region-preview">
+                                <div class="region-preview-title">選中區域預覽：</div>
+                                <canvas id="backPreviewCanvas" class="region-preview-canvas"></canvas>
+                            </div>
+
+                            <!-- 控制按鈕 -->
+                            <div class="region-controls">
+                                <button type="button" class="region-btn" onclick="startOCRRegion('back', event)">🤖
+                                    識別此區域</button>
+                                <button type="button" class="region-btn secondary"
+                                    onclick="clearRegionSelection('back', event)">🧹 清除選擇</button>
+                                <button type="button" class="region-btn danger"
+                                    onclick="closeRegionPanel('back', event)">❌ 關閉</button>
                             </div>
                         </div>
                     </div>
@@ -1072,18 +741,32 @@
         function addAdjustmentButton(side) {
             const previewBox = document.getElementById(side + 'Preview').parentElement;
             let adjustBtn = document.getElementById(side + 'AdjustBtn');
+            let regionBtn = document.getElementById(side + 'RegionBtn');
 
             if (!adjustBtn) {
                 adjustBtn = document.createElement('button');
                 adjustBtn.id = side + 'AdjustBtn';
                 adjustBtn.className = 'adjustment-btn';
                 adjustBtn.style.marginTop = '10px';
+                adjustBtn.style.marginRight = '10px';
                 adjustBtn.innerHTML = '⚙️ 微調圖片';
                 adjustBtn.onclick = () => openAdjustmentPanel(side);
 
                 // 插入到預覽圖片之後
                 const preview = document.getElementById(side + 'Preview');
                 preview.parentNode.insertBefore(adjustBtn, preview.nextSibling);
+            }
+
+            if (!regionBtn) {
+                regionBtn = document.createElement('button');
+                regionBtn.id = side + 'RegionBtn';
+                regionBtn.className = 'adjustment-btn secondary';
+                regionBtn.style.marginTop = '10px';
+                regionBtn.innerHTML = '🎯 選擇區域';
+                regionBtn.onclick = () => openRegionPanel(side);
+
+                // 插入到調整按鈕之後
+                adjustBtn.parentNode.insertBefore(regionBtn, adjustBtn.nextSibling);
             }
         }
 
@@ -1103,27 +786,43 @@
         }
 
         // 關閉圖片調整面板
-        function closeAdjustmentPanel(side) {
+        function closeAdjustmentPanel(side, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             const panel = document.getElementById(side + 'AdjustmentPanel');
             panel.style.display = 'none';
         }
 
         // 旋轉圖片
-        function rotateImage(side, degrees) {
+        function rotateImage(side, degrees, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             const state = window[side + 'AdjustmentState'];
             state.rotation = (state.rotation + degrees) % 360;
             updateAdjustmentPreview(side);
         }
 
         // 縮放圖片
-        function scaleImage(side, factor) {
+        function scaleImage(side, factor, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             const state = window[side + 'AdjustmentState'];
             state.scale = Math.max(0.5, Math.min(3, state.scale * factor)); // 限制縮放範圍
             updateAdjustmentPreview(side);
         }
 
         // 移動圖片位置
-        function moveImage(side, deltaX, deltaY) {
+        function moveImage(side, deltaX, deltaY, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             const state = window[side + 'AdjustmentState'];
             state.offsetX += deltaX;
             state.offsetY += deltaY;
@@ -1131,7 +830,11 @@
         }
 
         // 重置圖片位置
-        function resetImagePosition(side) {
+        function resetImagePosition(side, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             const state = window[side + 'AdjustmentState'];
             state.offsetX = 0;
             state.offsetY = 0;
@@ -1139,7 +842,11 @@
         }
 
         // 重置所有調整
-        function resetAllAdjustments(side) {
+        function resetAllAdjustments(side, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             window[side + 'AdjustmentState'] = {
                 rotation: 0,
                 scale: 1,
@@ -1211,12 +918,94 @@
 
                 // 恢復狀態
                 ctx.restore();
+
+                // 如果是正面圖片，繪製姓名區域框線
+                if (side === 'front') {
+                    drawNameRegionFrame(ctx, canvasWidth, canvasHeight, drawWidth, drawHeight, state);
+                }
             };
             img.src = imageData;
         }
 
+        // 繪製姓名區域框線
+        function drawNameRegionFrame(ctx, canvasWidth, canvasHeight, drawWidth, drawHeight, state) {
+            // 保存當前狀態
+            ctx.save();
+
+            // 考慮圖片的調整狀態來計算姓名區域位置
+            // 基於台灣身分證姓名區域的標準位置：左上角約在 (18%, 45%)，大小約 (35%, 13%)
+
+            // 計算圖片在 canvas 中的實際位置（考慮縮放和偏移）
+            const centerX = canvasWidth / 2;
+            const centerY = canvasHeight / 2;
+
+            // 根據旋轉角度調整姓名區域的基準位置
+            let baseRegionX, baseRegionY, baseRegionWidth, baseRegionHeight;
+
+            if (state.rotation % 180 === 0) {
+                // 正常方向或180度旋轉
+                baseRegionX = drawWidth * 0.18;
+                baseRegionY = drawHeight * 0.45;
+                baseRegionWidth = drawWidth * 0.35;
+                baseRegionHeight = drawHeight * 0.13;
+            } else {
+                // 90度或270度旋轉 - 需要調整姓名區域的相對位置
+                baseRegionX = drawHeight * 0.45; // 原來的Y變成X
+                baseRegionY = drawWidth * 0.18;  // 原來的X變成Y
+                baseRegionWidth = drawHeight * 0.13;  // 原來的高度變成寬度
+                baseRegionHeight = drawWidth * 0.35; // 原來的寬度變成高度
+            }
+
+            // 應用縮放
+            const scaledRegionWidth = baseRegionWidth * state.scale;
+            const scaledRegionHeight = baseRegionHeight * state.scale;
+            const scaledRegionX = baseRegionX * state.scale;
+            const scaledRegionY = baseRegionY * state.scale;
+
+            // 計算最終位置（考慮旋轉、縮放和偏移）
+            let finalRegionX, finalRegionY;
+
+            if (state.rotation % 180 === 0) {
+                // 無旋轉或180度旋轉
+                finalRegionX = centerX - (drawWidth * state.scale) / 2 + scaledRegionX + state.offsetX;
+                finalRegionY = centerY - (drawHeight * state.scale) / 2 + scaledRegionY + state.offsetY;
+            } else {
+                // 90度或270度旋轉
+                finalRegionX = centerX - (drawHeight * state.scale) / 2 + scaledRegionX + state.offsetX;
+                finalRegionY = centerY - (drawWidth * state.scale) / 2 + scaledRegionY + state.offsetY;
+            }
+
+            // 確保框線不超出canvas邊界
+            finalRegionX = Math.max(0, Math.min(finalRegionX, canvasWidth - scaledRegionWidth));
+            finalRegionY = Math.max(0, Math.min(finalRegionY, canvasHeight - scaledRegionHeight));
+
+            // 設定框線樣式
+            ctx.strokeStyle = '#FF6B6B';  // 紅色框線，比較醒目
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]); // 虛線樣式：線段5px，間隔3px
+
+            // 繪製矩形框線
+            ctx.strokeRect(finalRegionX, finalRegionY, scaledRegionWidth, scaledRegionHeight);
+
+            // 添加標籤文字（調整文字位置以避免超出邊界）
+            ctx.fillStyle = '#FF6B6B';
+            ctx.font = `${Math.max(10, 12 * state.scale)}px Arial`;
+            ctx.textAlign = 'left';
+
+            // 確保文字不會超出上邊界
+            const textY = finalRegionY > 15 ? finalRegionY - 5 : finalRegionY + scaledRegionHeight + 15;
+            ctx.fillText('👤 姓名區', finalRegionX, textY);
+
+            // 恢復狀態
+            ctx.restore();
+        }
+
         // 套用調整
-        function applyAdjustments(side) {
+        function applyAdjustments(side, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             const canvas = document.getElementById(side + 'AdjustmentCanvas');
             const state = window[side + 'AdjustmentState'];
 
@@ -1363,6 +1152,437 @@
                     submitBtn.textContent = '🚀 開始上傳';
                 });
         });
+
+        // ========== 區域選擇功能 ==========
+
+        // 開啟區域選擇面板
+        function openRegionPanel(side) {
+            const panel = document.getElementById(side + 'RegionPanel');
+            const canvas = document.getElementById(side + 'RegionCanvas');
+            const preview = document.getElementById(side + 'Preview');
+
+            if (!preview.src) {
+                alert('請先上傳圖片！');
+                return;
+            }
+
+            panel.style.display = 'block';
+
+            // 初始化畫布
+            initRegionCanvas(side);
+
+            // 滾動到面板
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // 關閉區域選擇面板
+        function closeRegionPanel(side, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const panel = document.getElementById(side + 'RegionPanel');
+            panel.style.display = 'none';
+        }
+
+        // 初始化區域選擇畫布
+        function initRegionCanvas(side) {
+            const canvas = document.getElementById(side + 'RegionCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // 使用當前的圖片資料（可能是調整後的）
+            const currentImageData = window[side + 'CurrentImageData'] || window[side + 'OriginalImageData'];
+            if (!currentImageData) {
+                const preview = document.getElementById(side + 'Preview');
+                currentImageData = preview.src;
+            }
+
+            // 創建新的圖片物件
+            const img = new Image();
+            img.onload = function () {
+                // 設定畫布尺寸以適應容器
+                const maxWidth = 400;
+                const maxHeight = 250;
+                let canvasWidth, canvasHeight;
+
+                const ratio = img.width / img.height;
+                if (ratio > maxWidth / maxHeight) {
+                    canvasWidth = maxWidth;
+                    canvasHeight = maxWidth / ratio;
+                } else {
+                    canvasHeight = maxHeight;
+                    canvasWidth = maxHeight * ratio;
+                }
+
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+
+                // 繪製圖片
+                ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+
+                // 儲存圖片資料（使用調整後的圖片）
+                window[side + 'RegionImageData'] = {
+                    img: img,
+                    canvasWidth: canvasWidth,
+                    canvasHeight: canvasHeight,
+                    originalWidth: img.width,
+                    originalHeight: img.height
+                };
+
+                // 設定滑鼠事件
+                setupRegionSelection(side);
+            };
+            img.src = currentImageData;
+        }
+
+        // 設定區域選擇滑鼠事件
+        function setupRegionSelection(side) {
+            const canvas = document.getElementById(side + 'RegionCanvas');
+            const selectionRect = document.getElementById(side + 'SelectionRect');
+            let isSelecting = false;
+            let startX, startY, currentSelection = null;
+
+            canvas.addEventListener('mousedown', function (e) {
+                if (window[side + 'SelectionMode'] !== 'custom') return;
+
+                isSelecting = true;
+                const rect = canvas.getBoundingClientRect();
+                startX = e.clientX - rect.left;
+                startY = e.clientY - rect.top;
+
+                selectionRect.style.display = 'block';
+                selectionRect.style.left = startX + 'px';
+                selectionRect.style.top = startY + 'px';
+                selectionRect.style.width = '0px';
+                selectionRect.style.height = '0px';
+            });
+
+            canvas.addEventListener('mousemove', function (e) {
+                if (!isSelecting) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const currentX = e.clientX - rect.left;
+                const currentY = e.clientY - rect.top;
+
+                const width = Math.abs(currentX - startX);
+                const height = Math.abs(currentY - startY);
+                const left = Math.min(currentX, startX);
+                const top = Math.min(currentY, startY);
+
+                selectionRect.style.left = left + 'px';
+                selectionRect.style.top = top + 'px';
+                selectionRect.style.width = width + 'px';
+                selectionRect.style.height = height + 'px';
+            });
+
+            canvas.addEventListener('mouseup', function (e) {
+                if (!isSelecting) return;
+
+                isSelecting = false;
+                const rect = canvas.getBoundingClientRect();
+                const endX = e.clientX - rect.left;
+                const endY = e.clientY - rect.top;
+
+                // 計算選中區域
+                const selection = {
+                    x: Math.min(startX, endX),
+                    y: Math.min(startY, endY),
+                    width: Math.abs(endX - startX),
+                    height: Math.abs(endY - startY)
+                };
+
+                if (selection.width > 10 && selection.height > 10) {
+                    currentSelection = selection;
+                    window[side + 'CurrentSelection'] = selection;
+                    updateRegionPreview(side, selection);
+                }
+            });
+        }
+
+        // 選擇預設模板
+        function selectTemplate(side, template, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            // 更新按鈕樣式
+            const buttons = document.querySelectorAll(`#${side}RegionPanel .template-btn`);
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 設定選擇模式
+            window[side + 'SelectionMode'] = template;
+
+            const canvas = document.getElementById(side + 'RegionCanvas');
+            const imageData = window[side + 'RegionImageData'];
+
+            if (!imageData) return;
+
+            let selection;
+
+            // 根據模板類型設定選中區域
+            switch (template) {
+                case 'name':
+                    if (side === 'front') {
+                        selection = {
+                            x: imageData.canvasWidth * 0.18,
+                            y: imageData.canvasHeight * 0.45,
+                            width: imageData.canvasWidth * 0.35,
+                            height: imageData.canvasHeight * 0.13
+                        };
+                    }
+                    break;
+                case 'id':
+                    if (side === 'front') {
+                        selection = {
+                            x: imageData.canvasWidth * 0.18,
+                            y: imageData.canvasHeight * 0.58,
+                            width: imageData.canvasWidth * 0.35,
+                            height: imageData.canvasHeight * 0.08
+                        };
+                    }
+                    break;
+                case 'address':
+                    if (side === 'front') {
+                        selection = {
+                            x: imageData.canvasWidth * 0.6,
+                            y: imageData.canvasHeight * 0.55,
+                            width: imageData.canvasWidth * 0.35,
+                            height: imageData.canvasHeight * 0.2
+                        };
+                    }
+                    break;
+                case 'office':
+                    if (side === 'back') {
+                        selection = {
+                            x: imageData.canvasWidth * 0.1,
+                            y: imageData.canvasHeight * 0.1,
+                            width: imageData.canvasWidth * 0.8,
+                            height: imageData.canvasHeight * 0.25
+                        };
+                    }
+                    break;
+                case 'date':
+                    if (side === 'back') {
+                        selection = {
+                            x: imageData.canvasWidth * 0.1,
+                            y: imageData.canvasHeight * 0.35,
+                            width: imageData.canvasWidth * 0.8,
+                            height: imageData.canvasHeight * 0.15
+                        };
+                    }
+                    break;
+                case 'spouse':
+                    if (side === 'back') {
+                        selection = {
+                            x: imageData.canvasWidth * 0.1,
+                            y: imageData.canvasHeight * 0.5,
+                            width: imageData.canvasWidth * 0.8,
+                            height: imageData.canvasHeight * 0.4
+                        };
+                    }
+                    break;
+                case 'full':
+                    selection = {
+                        x: 0,
+                        y: 0,
+                        width: imageData.canvasWidth,
+                        height: imageData.canvasHeight
+                    };
+                    break;
+                case 'custom':
+                    // 清除現有選擇，等待用戶手動選擇
+                    clearRegionSelection(side, null);
+                    return;
+            }
+
+            if (selection) {
+                showRegionSelection(side, selection);
+                window[side + 'CurrentSelection'] = selection;
+                updateRegionPreview(side, selection);
+            }
+        }
+
+        // 顯示選中區域
+        function showRegionSelection(side, selection) {
+            const selectionRect = document.getElementById(side + 'SelectionRect');
+            selectionRect.style.display = 'block';
+            selectionRect.style.left = selection.x + 'px';
+            selectionRect.style.top = selection.y + 'px';
+            selectionRect.style.width = selection.width + 'px';
+            selectionRect.style.height = selection.height + 'px';
+        }
+
+        // 更新區域預覽
+        function updateRegionPreview(side, selection) {
+            const previewDiv = document.getElementById(side + 'RegionPreview');
+            const previewCanvas = document.getElementById(side + 'PreviewCanvas');
+            const ctx = previewCanvas.getContext('2d');
+            const imageData = window[side + 'RegionImageData'];
+
+            if (!imageData) return;
+
+            previewDiv.style.display = 'block';
+
+            // 設定預覽畫布尺寸
+            const maxPreviewWidth = 200;
+            const maxPreviewHeight = 100;
+            let previewWidth, previewHeight;
+
+            const ratio = selection.width / selection.height;
+            if (ratio > maxPreviewWidth / maxPreviewHeight) {
+                previewWidth = maxPreviewWidth;
+                previewHeight = maxPreviewWidth / ratio;
+            } else {
+                previewHeight = maxPreviewHeight;
+                previewWidth = maxPreviewHeight * ratio;
+            }
+
+            previewCanvas.width = previewWidth;
+            previewCanvas.height = previewHeight;
+
+            // 計算原圖中的實際區域
+            const scaleX = imageData.originalWidth / imageData.canvasWidth;
+            const scaleY = imageData.originalHeight / imageData.canvasHeight;
+
+            const sourceX = selection.x * scaleX;
+            const sourceY = selection.y * scaleY;
+            const sourceWidth = selection.width * scaleX;
+            const sourceHeight = selection.height * scaleY;
+
+            // 繪製選中區域
+            ctx.drawImage(imageData.img,
+                sourceX, sourceY, sourceWidth, sourceHeight,
+                0, 0, previewWidth, previewHeight);
+        }
+
+        // 清除區域選擇
+        function clearRegionSelection(side, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const selectionRect = document.getElementById(side + 'SelectionRect');
+            const previewDiv = document.getElementById(side + 'RegionPreview');
+            const buttons = document.querySelectorAll(`#${side}RegionPanel .template-btn`);
+
+            selectionRect.style.display = 'none';
+            previewDiv.style.display = 'none';
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            window[side + 'CurrentSelection'] = null;
+            window[side + 'SelectionMode'] = null;
+        }
+
+        // 開始對選中區域進行 OCR 識別
+        function startOCRRegion(side, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const selection = window[side + 'CurrentSelection'];
+            if (!selection) {
+                alert('請先選擇要識別的區域！');
+                return;
+            }
+
+            const imageData = window[side + 'RegionImageData'];
+            if (!imageData) {
+                alert('圖片資料不存在！');
+                return;
+            }
+
+            // 創建只包含選中區域的 canvas
+            const regionCanvas = document.createElement('canvas');
+            const ctx = regionCanvas.getContext('2d');
+
+            // 計算原圖中的實際區域
+            const scaleX = imageData.originalWidth / imageData.canvasWidth;
+            const scaleY = imageData.originalHeight / imageData.canvasHeight;
+
+            const sourceX = selection.x * scaleX;
+            const sourceY = selection.y * scaleY;
+            const sourceWidth = selection.width * scaleX;
+            const sourceHeight = selection.height * scaleY;
+
+            regionCanvas.width = sourceWidth;
+            regionCanvas.height = sourceHeight;
+
+            // 繪製選中區域到新 canvas
+            ctx.drawImage(imageData.img,
+                sourceX, sourceY, sourceWidth, sourceHeight,
+                0, 0, sourceWidth, sourceHeight);
+
+            // 轉換為 blob 並發送 OCR 請求
+            regionCanvas.toBlob(function (blob) {
+                if (blob) {
+                    performOCROnRegion(blob, side, window[side + 'SelectionMode'] || 'custom');
+                } else {
+                    alert('無法創建區域圖片！');
+                }
+            }, 'image/jpeg', 0.9);
+        }
+
+        // 執行區域 OCR 識別
+        function performOCROnRegion(blob, side, regionType) {
+            // 顯示處理中狀態
+            const regionBtn = document.querySelector(`#${side}RegionPanel .region-btn`);
+            const originalText = regionBtn.textContent;
+            regionBtn.textContent = '🔄 識別中...';
+            regionBtn.disabled = true;
+
+            // 創建 FormData
+            const formData = new FormData();
+            formData.append('image', blob, `${side}_region_${regionType}.jpg`);
+            formData.append('regionType', regionType);
+            formData.append('side', side);
+
+            // 發送 OCR 請求
+            fetch('/id-card/api/ocr-region', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    regionBtn.textContent = originalText;
+                    regionBtn.disabled = false;
+
+                    if (data.success) {
+                        // 顯示 OCR 結果
+                        displayOCRResult(data.result, side, regionType);
+                    } else {
+                        alert('❌ OCR 識別失敗: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    regionBtn.textContent = originalText;
+                    regionBtn.disabled = false;
+                    alert('❌ 網路請求失敗: ' + error.message);
+                });
+        }
+
+        // 顯示 OCR 識別結果
+        function displayOCRResult(result, side, regionType) {
+            let title;
+            switch (regionType) {
+                case 'name': title = '姓名'; break;
+                case 'id': title = '身分證號(英數)'; break;
+                case 'address': title = '地址'; break;
+                case 'office': title = '發證機關'; break;
+                case 'date': title = '發證日期'; break;
+                case 'spouse': title = '配偶'; break;
+                default: title = '識別區域';
+            }
+
+            const message = `🎯 ${title}識別結果：\n\n${result.extractedText}\n\n信心度: ${(result.confidence * 100).toFixed(1)}%`;
+            alert(message);
+
+            // 同時在控制台輸出詳細結果
+            console.log(`${side} ${regionType} OCR Result:`, result);
+        }
 
         // 顯示 AI 驗證結果
         function displayAiValidationResults(aiValidation) {

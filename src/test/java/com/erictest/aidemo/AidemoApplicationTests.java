@@ -9,7 +9,7 @@ class AidemoApplicationTests {
 	@Test
 	void contextLoads() {
 
-		
+		System.out.println("=== AidemoApplicationTests ===");
 	}
 
 }

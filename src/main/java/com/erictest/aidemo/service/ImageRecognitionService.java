@@ -96,6 +96,118 @@ public class ImageRecognitionService {
     }
 
     /**
+     * 只驗證身分證正面的姓名區域 - 提高準確率
+     */
+    public ImageValidationResult validateNameRegionOnly(byte[] imageData, String expectedName) {
+        try {
+            // 1. 檢測圖片基本屬性
+            boolean isValidImage = checkImageProperties(imageData);
+
+            // 2. 從圖片中提取姓名區域並進行 OCR
+            String extractedNameText = extractNameRegion(imageData);
+
+            // 3. 驗證姓名
+            boolean nameMatches = verifyName(extractedNameText, expectedName);
+
+            System.out.println("=== 姓名區域驗證 ===");
+            System.out.println("預期姓名: " + expectedName);
+            System.out.println("提取的姓名區域文字: " + extractedNameText);
+            System.out.println("姓名匹配結果: " + nameMatches);
+            System.out.println("==================");
+
+            return new ImageValidationResult(
+                    isValidImage,
+                    nameMatches,
+                    true, // 假設圖片格式正確（因為只檢查姓名區域）
+                    extractedNameText,
+                    generateNameValidationMessage(isValidImage, nameMatches, extractedNameText)
+            );
+
+        } catch (Exception e) {
+            System.err.println("❌ 姓名區域驗證失敗: " + e.getMessage());
+            return new ImageValidationResult(
+                    false, false, false, "",
+                    "姓名區域驗證失敗: " + e.getMessage()
+            );
+        }
+    }
+
+    /**
+     * 從身分證正面圖片中提取姓名區域文字
+     */
+    private String extractNameRegion(byte[] imageData) {
+        try {
+            // 將 byte[] 轉換為 BufferedImage
+            ByteArrayInputStream bis = new ByteArrayInputStream(imageData);
+            BufferedImage image = ImageIO.read(bis);
+
+            if (image == null) {
+                throw new IOException("無法讀取圖像");
+            }
+
+            // 計算姓名區域的座標 (基於台灣身分證標準位置)
+            // 姓名區域通常位於左上部分：X約18%, Y約45%, 寬度約35%, 高度約13%
+            int imageWidth = image.getWidth();
+            int imageHeight = image.getHeight();
+
+            int nameX = (int) (imageWidth * 0.18);
+            int nameY = (int) (imageHeight * 0.45);
+            int nameWidth = (int) (imageWidth * 0.35);
+            int nameHeight = (int) (imageHeight * 0.13);
+
+            // 確保座標不超出圖片邊界
+            nameX = Math.max(0, Math.min(nameX, imageWidth - 1));
+            nameY = Math.max(0, Math.min(nameY, imageHeight - 1));
+            nameWidth = Math.max(1, Math.min(nameWidth, imageWidth - nameX));
+            nameHeight = Math.max(1, Math.min(nameHeight, imageHeight - nameY));
+
+            // 提取姓名區域
+            BufferedImage nameRegion = image.getSubimage(nameX, nameY, nameWidth, nameHeight);
+
+            // 對姓名區域進行預處理以提高 OCR 準確度
+            BufferedImage processedNameRegion = preprocessImage(nameRegion);
+
+            // 使用 Tesseract 對姓名區域進行 OCR
+            String nameText = tesseract.doOCR(processedNameRegion);
+
+            // 清理提取的文字
+            String cleanedNameText = cleanupEncodingIssues(nameText).trim();
+
+            System.out.println("=== 姓名區域提取 ===");
+            System.out.println("圖片尺寸: " + imageWidth + "x" + imageHeight);
+            System.out.println("姓名區域: (" + nameX + "," + nameY + ") " + nameWidth + "x" + nameHeight);
+            System.out.println("提取的原始文字: " + nameText);
+            System.out.println("清理後的文字: " + cleanedNameText);
+            System.out.println("==================");
+
+            return cleanedNameText;
+
+        } catch (TesseractException | IOException e) {
+            System.err.println("❌ 姓名區域 OCR 處理失敗: " + e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * 為姓名區域驗證生成驗證訊息
+     */
+    private String generateNameValidationMessage(boolean isValidImage, boolean nameMatches, String extractedText) {
+        if (!isValidImage) {
+            return "圖片格式或比例不符合身分證標準";
+        }
+
+        if (nameMatches) {
+            return "✅ 姓名驗證成功";
+        } else {
+            if (extractedText.isEmpty()) {
+                return "❌ 無法從姓名區域識別出文字，請確保圖片清晰";
+            } else {
+                return "❌ 姓名不符，識別到：" + extractedText;
+            }
+        }
+    }
+
+    /**
      * 檢測圖片基本屬性 (台灣身分證比例檢查)
      */
     private boolean checkImageProperties(byte[] imageData) {
@@ -751,5 +863,212 @@ public class ImageRecognitionService {
         public boolean isValid() {
             return validImage && nameMatches && isIdCardFormat;
         }
+    }
+
+    /**
+     * OCR 識別結果類
+     */
+    public static class OCRResult {
+
+        private final String extractedText;
+        private final double confidence;
+        private final String message;
+
+        public OCRResult(String extractedText, double confidence, String message) {
+            this.extractedText = extractedText;
+            this.confidence = confidence;
+            this.message = message;
+        }
+
+        public String getExtractedText() {
+            return extractedText;
+        }
+
+        public double getConfidence() {
+            return confidence;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    /**
+     * 對 MultipartFile 圖片執行 OCR 識別
+     */
+    public OCRResult performOCR(org.springframework.web.multipart.MultipartFile imageFile) {
+        try {
+            // 轉換 MultipartFile 為 byte array
+            byte[] imageData = imageFile.getBytes();
+            return performOCR(imageData);
+
+        } catch (IOException e) {
+            System.err.println("❌ 讀取圖片檔案失敗: " + e.getMessage());
+            return new OCRResult("", 0.0, "讀取圖片檔案失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 對 byte array 圖片執行 OCR 識別
+     */
+    public OCRResult performOCR(byte[] imageData) {
+        return performOCR(imageData, null);
+    }
+
+    /**
+     * 對 byte array 圖片執行 OCR 識別 (支援特定區域類型優化)
+     */
+    public OCRResult performOCR(byte[] imageData, String regionType) {
+        try {
+            // 將 byte array 轉換為 BufferedImage
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageData));
+            if (image == null) {
+                return new OCRResult("", 0.0, "無法解析圖片格式");
+            }
+
+            // 根據區域類型進行特殊處理
+            if ("id".equals(regionType)) {
+                // 身分證號碼的特殊處理
+                return performIdNumberOCR(image);
+            } else {
+                // 一般 OCR 處理
+                return performGeneralOCR(image);
+            }
+
+        } catch (IOException e) {
+            System.err.println("❌ 圖片讀取失敗: " + e.getMessage());
+            return new OCRResult("", 0.0, "圖片讀取失敗: " + e.getMessage());
+        } catch (Exception e) {
+            return new OCRResult("", 0.0, "OCR 過程發生錯誤: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 專門針對身分證號碼的 OCR 處理
+     */
+    private OCRResult performIdNumberOCR(BufferedImage image) {
+        try {
+            // 為身分證號碼優化的 Tesseract 設定
+            Tesseract idTesseract = new Tesseract();
+            idTesseract.setDatapath("./tessdata");
+
+            // 優先使用英文模式來識別身分證號碼
+            idTesseract.setLanguage("eng");
+            idTesseract.setOcrEngineMode(1);
+            idTesseract.setPageSegMode(8); // 單個文字塊
+
+            // 針對身分證號碼的特殊設定
+            idTesseract.setVariable("tessedit_char_whitelist", "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+            idTesseract.setVariable("classify_bln_numeric_mode", "1");
+            idTesseract.setVariable("tessedit_write_unlv", "0");
+            idTesseract.setVariable("user_defined_dpi", "300");
+
+            String ocrText = idTesseract.doOCR(image);
+            if (ocrText == null || ocrText.trim().isEmpty()) {
+                return new OCRResult("", 0.0, "未能識別出身分證號碼");
+            }
+
+            String cleanText = ocrText.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
+
+            // 驗證身分證號碼格式
+            if (isValidTaiwanIdFormat(cleanText)) {
+                System.out.println("🎯 身分證號碼識別成功: " + cleanText);
+                return new OCRResult(cleanText, 0.95, "身分證號碼識別成功");
+            } else {
+                System.out.println("⚠️ 身分證號碼格式不完整: " + cleanText);
+                return new OCRResult(cleanText, 0.6, "身分證號碼識別部分成功，格式需要檢查");
+            }
+
+        } catch (TesseractException e) {
+            System.err.println("❌ 身分證號碼 OCR 處理失敗: " + e.getMessage());
+            return new OCRResult("", 0.0, "身分證號碼 OCR 處理失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 一般的 OCR 處理
+     */
+    private OCRResult performGeneralOCR(BufferedImage image) {
+        try {
+            // 執行 OCR
+            String ocrText = tesseract.doOCR(image);
+            if (ocrText == null || ocrText.trim().isEmpty()) {
+                return new OCRResult("", 0.0, "未能識別出任何文字");
+            }
+
+            // 清理 OCR 結果
+            String cleanText = ocrText.trim();
+
+            // 計算信心度 (簡單的啟發式方法)
+            double confidence = calculateOCRConfidence(cleanText);
+
+            System.out.println("🎯 OCR 識別成功，文字內容: " + cleanText);
+
+            return new OCRResult(cleanText, confidence, "OCR 識別成功");
+
+        } catch (TesseractException e) {
+            System.err.println("❌ OCR 處理失敗: " + e.getMessage());
+            return new OCRResult("", 0.0, "OCR 處理失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 驗證台灣身分證號碼格式
+     */
+    private boolean isValidTaiwanIdFormat(String idNumber) {
+        if (idNumber == null || idNumber.length() != 10) {
+            return false;
+        }
+
+        // 第一個字符必須是 A-Z
+        char firstChar = idNumber.charAt(0);
+        if (firstChar < 'A' || firstChar > 'Z') {
+            return false;
+        }
+
+        // 後面 9 個字符必須是數字
+        for (int i = 1; i < 10; i++) {
+            char c = idNumber.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 計算 OCR 識別的信心度
+     */
+    private double calculateOCRConfidence(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0.0;
+        }
+
+        double confidence = 0.5; // 基礎信心度
+
+        // 有中文字符加分
+        if (text.matches(".*[\\u4e00-\\u9fa5].*")) {
+            confidence += 0.2;
+        }
+
+        // 有數字加分
+        if (text.matches(".*\\d.*")) {
+            confidence += 0.1;
+        }
+
+        // 文字長度適中加分
+        int length = text.length();
+        if (length >= 2 && length <= 50) {
+            confidence += 0.1;
+        }
+
+        // 沒有過多特殊字符加分
+        long specialCharCount = text.chars().filter(ch -> !Character.isLetterOrDigit(ch) && !Character.isWhitespace(ch)).count();
+        if (specialCharCount <= text.length() * 0.2) {
+            confidence += 0.1;
+        }
+
+        return Math.min(1.0, confidence);
     }
 }
