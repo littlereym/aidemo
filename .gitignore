@@ -32,4 +32,13 @@ build/
 ### VS Code ###
 .vscode/
 
+### Upload Directory ###
+# 忽略上傳目錄中的所有檔案
+uploads/
+uploads/*
+uploads/**/*
+
+# 忽略測試資料目錄中的備份檔案
+tessdata/*.traineddata.backup
+
 .fake
