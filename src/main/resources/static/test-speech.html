@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMU Sphinx 語音識別測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .test-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .info-section {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .upload-section {
+            background: #edf2f7;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .file-input {
+            margin: 20px 0;
+        }
+
+        .upload-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-section {
+            background: #f0fff4;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #68d391;
+            display: none;
+        }
+
+        .error-section {
+            background: #fed7d7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #fc8181;
+            display: none;
+        }
+
+        .engine-info {
+            background: #e6fffa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .recommendation {
+            background: #fefcbf;
+            border-left: 4px solid #f6e05e;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .file-info {
+            background: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-container">
+        <h1>🎤 CMU Sphinx 語音識別測試</h1>
+
+        <div class="info-section">
+            <h3>📋 測試說明</h3>
+            <p>此頁面用於測試 CMU Sphinx 語音識別引擎的功能。您可以上傳音頻文件來測試語音轉文字的效果。</p>
+            <ul>
+                <li>支援格式：MP3, WAV, M4A, OGG</li>
+                <li>建議檔案大小：100KB - 10MB</li>
+                <li>語言支援：中文、英文</li>
+                <li>識別引擎：CMU Sphinx (增強模擬版)</li>
+            </ul>
+        </div>
+
+        <div class="engine-info" id="engineInfo">
+            <h3>🔧 引擎資訊載入中...</h3>
+        </div>
+
+        <div class="upload-section">
+            <h3>📁 上傳音頻檔案</h3>
+            <form id="uploadForm">
+                <input type="file" id="audioFile" name="audioFile" accept=".mp3,.wav,.m4a,.ogg,.flac"
+                    class="file-input">
+                <br>
+                <button type="submit" class="upload-btn">
+                    🚀 開始語音識別
+                </button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>正在進行語音識別，請稍候...</p>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h3>✅ 識別結果</h3>
+            <div id="recognitionResults"></div>
+        </div>
+
+        <div class="error-section" id="errorSection">
+            <h3>❌ 處理錯誤</h3>
+            <div id="errorMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        // 載入引擎資訊
+        async function loadEngineInfo() {
+            try {
+                const response = await fetch('/speech/engine-info');
+                const data = await response.json();
+
+                if (data.success) {
+                    const engineInfoDiv = document.getElementById('engineInfo');
+                    const engineInfo = data.engineInfo;
+                    const recommendations = data.recommendations;
+
+                    engineInfoDiv.innerHTML = `
+                        <h3>🔧 ${engineInfo.engine} 引擎資訊</h3>
+                        <div class="file-info">
+                            <strong>版本：</strong> ${engineInfo.version}<br>
+                            <strong>狀態：</strong> ${engineInfo.status}<br>
+                            <strong>支援語言：</strong> ${engineInfo.supportedLanguages.join(', ')}<br>
+                            <strong>功能特性：</strong> ${engineInfo.features.join(', ')}
+                        </div>
+                        <h4>💡 音頻處理建議</h4>
+                        ${recommendations.map(rec => `<div class="recommendation">• ${rec}</div>`).join('')}
+                    `;
+                }
+            } catch (error) {
+                console.error('載入引擎資訊失敗:', error);
+                document.getElementById('engineInfo').innerHTML = `
+                    <h3>⚠️ 引擎資訊載入失敗</h3>
+                    <p>無法連接到語音識別引擎，請檢查服務器狀態。</p>
+                `;
+            }
+        }
+
+        // 處理文件上傳
+        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showError('請選擇一個音頻檔案');
+                return;
+            }
+
+            // 顯示載入狀態
+            showLoading();
+
+            // 準備表單數據
+            const formData = new FormData();
+            formData.append('audioFile', file);
+
+            try {
+                const response = await fetch('/speech/api/speech-to-text', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                hideLoading();
+
+                if (result.success) {
+                    showResult(result.data, file);
+                } else {
+                    showError(result.message || '語音識別失敗');
+                }
+
+            } catch (error) {
+                hideLoading();
+                showError('網絡錯誤：' + error.message);
+            }
+        });
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showResult(data, file) {
+            const resultDiv = document.getElementById('recognitionResults');
+
+            resultDiv.innerHTML = `
+                <div class="file-info">
+                    <h4>📁 檔案資訊</h4>
+                    <strong>檔案名稱：</strong> ${file.name}<br>
+                    <strong>檔案大小：</strong> ${formatFileSize(data.fileSize)}<br>
+                    <strong>檔案類型：</strong> ${file.type || '未知'}<br>
+                    <strong>識別引擎：</strong> ${data.engine || 'CMU Sphinx'}<br>
+                    <strong>信心度：</strong> ${Math.round((data.confidence || 0.85) * 100)}%<br>
+                    <strong>處理時間：</strong> ${data.processingTime || 'N/A'}
+                </div>
+                
+                <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4>🔤 識別文字</h4>
+                    <p style="font-size: 16px; line-height: 1.6; color: #2d3748;">
+                        "${data.recognizedText}"
+                    </p>
+                </div>
+                
+                ${data.audioInfo ? `
+                <div class="file-info">
+                    <h4>🎵 音頻分析</h4>
+                    <strong>格式：</strong> ${data.audioInfo.format}<br>
+                    <strong>預估長度：</strong> ${data.audioInfo.estimatedDuration}<br>
+                    <strong>品質評估：</strong> ${data.audioInfo.quality}
+                </div>
+                ` : ''}
+            `;
+
+            document.getElementById('resultSection').style.display = 'block';
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').innerHTML = `<p>${message}</p>`;
+            document.getElementById('errorSection').style.display = 'block';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 頁面載入時獲取引擎資訊
+        loadEngineInfo();
+
+        // 文件選擇變化時的處理
+        document.getElementById('audioFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                console.log('選擇的檔案:', file.name, '大小:', file.size, '類型:', file.type);
+            }
+        });
+    </script>
+</body>
+
+</html>
